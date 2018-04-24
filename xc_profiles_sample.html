@@ -1,0 +1,588 @@
+
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This is merely a sample of data from the interscholastic Track &amp; Field and Cross Country statistics website Athletic.Net.</p>
+<p>In order to make my examples clear and easy to follow, I have decided to play around with just a few rows (in particular, stats for my brother and I; me back from when I was running XC in high school) taken from Althletic.Net statistics I parsed the other day using python's Beautiful Soup module.</p>
+<p>I will likely include a link to a more comprehensive web-scraping and statistical analysis project using some of this data, but as of the time of this writing, I have yet to decide exactly what I want to do with it.</p>
+<p>I want to get this short SQL/sqlite/sqlalchemy sample uploaded first, because of how in-demand basic db-interaction/querying skills seem to be when it comes to entry-level positions.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="k">import</span> <span class="n">create_engine</span><span class="p">,</span> <span class="n">MetaData</span>
+
+<span class="c1"># Create connection to local database file</span>
+<span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s1">&#39;sqlite:///xc_profiles.db&#39;</span><span class="p">)</span>
+<span class="n">connection</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+<span class="n">metadata</span> <span class="o">=</span> <span class="n">MetaData</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">tbl</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">metadata</span><span class="o">.</span><span class="n">sorted_tables</span><span class="p">):</span>
+    <span class="n">engine</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">delete</span><span class="p">())</span>
+
+<span class="n">metadata</span><span class="o">.</span><span class="n">drop_all</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">engine</span><span class="o">.</span><span class="n">table_names</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Engine(sqlite:///xc_profiles.db)
+[]
+&lt;sqlalchemy.engine.base.Connection object at 0x000002555DFCBEB8&gt;
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="k">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">Column</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">Boolean</span>
+
+<span class="n">metadata</span><span class="o">.</span><span class="n">drop_all</span><span class="p">()</span>
+<span class="n">metadata</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">metadata</span><span class="o">.</span><span class="n">reflect</span><span class="p">())</span>
+
+<span class="c1"># NOTE: for reference, and those unfamiliar with sqlalchemy syntax,</span>
+<span class="c1"># I will include the equivalent SQL statement as a comment above each operation.</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="n">engine</span><span class="o">.</span><span class="n">table_names</span><span class="p">())</span>
+<span class="c1"># CREATE TABLE example: &quot;&quot;&quot;CREATE TABLE stats2 (Name VARCHAR, Event VARCHAR, Year INTEGER, ...etc)&quot;&quot;&quot;</span>
+<span class="n">stats2</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s1">&#39;stats2&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span>
+             <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;Name&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">)),</span>
+             <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;Event&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">)),</span>
+             <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;Year&#39;</span><span class="p">,</span> <span class="n">Integer</span><span class="p">()),</span>
+             <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;Grade&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">)),</span>
+             <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">)),</span> <span class="n">extend_existing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Use metadata to create the stats2 table defined above</span>
+<span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+
+<span class="c1"># Confrim the tables we have to work with. stats2 should be present.</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">engine</span><span class="o">.</span><span class="n">table_names</span><span class="p">())</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>None
+[]
+[&#39;stats2&#39;]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Print stats2 table details</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">stats2</span><span class="p">))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Table(&#39;stats2&#39;, MetaData(bind=Engine(sqlite:///xc_profiles.db)), Column(&#39;Name&#39;, String(length=255), table=&lt;stats2&gt;), Column(&#39;Event&#39;, String(length=255), table=&lt;stats2&gt;), Column(&#39;Year&#39;, Integer(), table=&lt;stats2&gt;), Column(&#39;Grade&#39;, String(length=255), table=&lt;stats2&gt;), Column(&#39;Time&#39;, String(length=255), table=&lt;stats2&gt;), schema=None)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="k">import</span> <span class="n">insert</span><span class="p">,</span> <span class="n">select</span>
+
+<span class="c1"># As mentioned in the introduction, for simplicity and reference</span>
+<span class="c1"># I am just working with a few rows from my athletic.net data:</span>
+<span class="n">stats_list</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;Wesley Warriner&#39;</span><span class="p">,</span> <span class="s1">&#39;Event&#39;</span><span class="p">:</span> <span class="s1">&#39;3,000 Meters&#39;</span><span class="p">,</span> <span class="s1">&#39;Year&#39;</span><span class="p">:</span> <span class="mi">2012</span><span class="p">,</span> <span class="s1">&#39;Grade&#39;</span><span class="p">:</span> <span class="s1">&#39;10th Grade&#39;</span><span class="p">,</span> <span class="s1">&#39;Time&#39;</span><span class="p">:</span> <span class="s1">&#39;13:05.0 PR&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;Wesley Warriner&#39;</span><span class="p">,</span> <span class="s1">&#39;Event&#39;</span><span class="p">:</span> <span class="s1">&#39;3,000 Meters&#39;</span><span class="p">,</span> <span class="s1">&#39;Year&#39;</span><span class="p">:</span> <span class="mi">2014</span><span class="p">,</span> <span class="s1">&#39;Grade&#39;</span><span class="p">:</span> <span class="s1">&#39;12th Grade&#39;</span><span class="p">,</span> <span class="s1">&#39;Time&#39;</span><span class="p">:</span> <span class="s1">&#39;14:12.0&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;Wesley Warriner&#39;</span><span class="p">,</span> <span class="s1">&#39;Event&#39;</span><span class="p">:</span> <span class="s1">&#39;5,000 Meters&#39;</span><span class="p">,</span> <span class="s1">&#39;Year&#39;</span><span class="p">:</span> <span class="mi">2011</span><span class="p">,</span> <span class="s1">&#39;Grade&#39;</span><span class="p">:</span> <span class="s1">&#39;9th Grade&#39;</span><span class="p">,</span> <span class="s1">&#39;Time&#39;</span><span class="p">:</span> <span class="s1">&#39;18:57.0&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;Wesley Warriner&#39;</span><span class="p">,</span> <span class="s1">&#39;Event&#39;</span><span class="p">:</span> <span class="s1">&#39;5,000 Meters&#39;</span><span class="p">,</span> <span class="s1">&#39;Year&#39;</span><span class="p">:</span> <span class="mi">2012</span><span class="p">,</span> <span class="s1">&#39;Grade&#39;</span><span class="p">:</span> <span class="s1">&#39;10th Grade&#39;</span><span class="p">,</span> <span class="s1">&#39;Time&#39;</span><span class="p">:</span> <span class="s1">&#39;17:48.1 PR&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;Wesley Warriner&#39;</span><span class="p">,</span> <span class="s1">&#39;Event&#39;</span><span class="p">:</span> <span class="s1">&#39;5,000 Meters&#39;</span><span class="p">,</span> <span class="s1">&#39;Year&#39;</span><span class="p">:</span> <span class="mi">2013</span><span class="p">,</span> <span class="s1">&#39;Grade&#39;</span><span class="p">:</span> <span class="s1">&#39;11th Grade&#39;</span><span class="p">,</span> <span class="s1">&#39;Time&#39;</span><span class="p">:</span> <span class="s1">&#39;19:30.0&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;Wesley Warriner&#39;</span><span class="p">,</span> <span class="s1">&#39;Event&#39;</span><span class="p">:</span> <span class="s1">&#39;5,000 Meters&#39;</span><span class="p">,</span> <span class="s1">&#39;Year&#39;</span><span class="p">:</span> <span class="mi">2013</span><span class="p">,</span> <span class="s1">&#39;Grade&#39;</span><span class="p">:</span> <span class="s1">&#39;12th Grade&#39;</span><span class="p">,</span> <span class="s1">&#39;Time&#39;</span><span class="p">:</span> <span class="s1">&#39;19:00.0&#39;</span><span class="p">},</span>    
+    <span class="p">{</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;Duncan Warriner&#39;</span><span class="p">,</span> <span class="s1">&#39;Event&#39;</span><span class="p">:</span> <span class="s1">&#39;5,000 Meters&#39;</span><span class="p">,</span> <span class="s1">&#39;Year&#39;</span><span class="p">:</span> <span class="mi">2016</span><span class="p">,</span> <span class="s1">&#39;Grade&#39;</span><span class="p">:</span> <span class="s1">&#39;9th Grade&#39;</span><span class="p">,</span> <span class="s1">&#39;Time&#39;</span><span class="p">:</span> <span class="s1">&#39;19:07.0&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;Duncan Warriner&#39;</span><span class="p">,</span> <span class="s1">&#39;Event&#39;</span><span class="p">:</span> <span class="s1">&#39;5,000 Meters&#39;</span><span class="p">,</span> <span class="s1">&#39;Year&#39;</span><span class="p">:</span> <span class="mi">2017</span><span class="p">,</span> <span class="s1">&#39;Grade&#39;</span><span class="p">:</span> <span class="s1">&#39;10th Grade&#39;</span><span class="p">,</span> <span class="s1">&#39;Time&#39;</span><span class="p">:</span> <span class="s1">&#39;18:29.6 PR&#39;</span><span class="p">}</span>
+<span class="p">]</span>
+
+
+<span class="c1"># Prepare INSERT statement for stats_list entries into stats2 table: </span>
+<span class="c1">#   &quot;&quot;&quot;INSERT INTO stats2 (&quot;Name&quot;, &quot;Event&quot;, &quot;Year&quot;, &quot;Grade&quot;, &quot;Time&quot;) VALUES (:Name, :Event, :Year, :Grade, :Time)&quot;&quot;&quot;</span>
+<span class="n">insert_stmt</span> <span class="o">=</span> <span class="n">insert</span><span class="p">(</span><span class="n">stats2</span><span class="p">)</span>
+<span class="c1"># btw this is how you can quickly retrieve the string equivalent:</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">insert_stmt</span><span class="p">))</span>
+
+<span class="c1"># Execute stmt with the stats_list list of dicts</span>
+<span class="n">insert_results</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">insert_stmt</span><span class="p">,</span> <span class="n">stats_list</span><span class="p">)</span>
+
+<span class="c1"># Print rowcount to confirm INSERT</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;NumRows:&#39;</span><span class="p">,</span><span class="n">insert_results</span><span class="o">.</span><span class="n">rowcount</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>INSERT INTO stats2 (&#34;Name&#34;, &#34;Event&#34;, &#34;Year&#34;, &#34;Grade&#34;, &#34;Time&#34;) VALUES (?, ?, ?, ?, ?)
+NumRows: 8
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># SELECT statement: &quot;&quot;&quot;SELECT * FROM stats2 WHERE Name == &#39;Duncan Warriner&#39;&quot;&quot;&quot;</span>
+<span class="n">select_stmt</span> <span class="o">=</span> <span class="n">select</span><span class="p">([</span><span class="n">stats2</span><span class="p">])</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Name</span> <span class="o">==</span> <span class="s1">&#39;Duncan Warriner&#39;</span><span class="p">)</span>
+<span class="n">select_results</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">select_stmt</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">select_results</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[(&#39;Duncan Warriner&#39;, &#39;5,000 Meters&#39;, 2016, &#39;9th Grade&#39;, &#39;19:07.0&#39;), (&#39;Duncan Warriner&#39;, &#39;5,000 Meters&#39;, 2017, &#39;10th Grade&#39;, &#39;18:29.6 PR&#39;)]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="k">import</span> <span class="n">and_</span>
+
+<span class="c1"># one more simple SELECT statement: &quot;&quot;&quot;SELECT Time FROM stats2 WHERE Name == &#39;Wesley Warriner&#39; AND Event == &#39;3,000 Meters&#39;&quot;&quot;&quot;</span>
+<span class="n">select_stmt</span> <span class="o">=</span> <span class="n">select</span><span class="p">([</span><span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Time</span><span class="p">])</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+    <span class="n">and_</span><span class="p">(</span>
+        <span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Name</span> <span class="o">==</span> <span class="s1">&#39;Wesley Warriner&#39;</span><span class="p">,</span>
+        <span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Event</span> <span class="o">==</span> <span class="s1">&#39;3,000 Meters&#39;</span><span class="p">))</span>
+<span class="n">select_results</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">select_stmt</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">select_results</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[(&#39;13:05.0 PR&#39;,), (&#39;14:12.0&#39;,)]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="k">import</span> <span class="n">update</span>
+
+<span class="c1"># UPDATE statement example: &quot;&quot;&quot;UPDATE stats2 SET Grade = &#39;9th Grade&#39; WHERE Name = &#39;Duncan Warriner&#39; AND Year = 2017&quot;&quot;&quot;</span>
+<span class="n">update_stmt</span> <span class="o">=</span> <span class="n">update</span><span class="p">(</span><span class="n">stats2</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="n">Grade</span><span class="o">=</span><span class="s1">&#39;9th Grade&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+    <span class="n">and_</span><span class="p">(</span>
+        <span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Name</span> <span class="o">==</span> <span class="s1">&#39;Duncan Warriner&#39;</span><span class="p">,</span>
+        <span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Year</span> <span class="o">==</span> <span class="mi">2017</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">update_stmt</span><span class="p">)</span>
+
+<span class="c1"># confirmation SELECT statement: &quot;&quot;&quot;SELECT * FROM stats2 WHERE Grade == &#39;9th Grade&#39;</span>
+<span class="c1">#   AND Name == &#39;Duncan Warriner&#39; AND Year == 2017&quot;&quot;&quot;</span>
+<span class="n">select_stmt</span> <span class="o">=</span> <span class="n">select</span><span class="p">([</span><span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Grade</span><span class="p">])</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+    <span class="n">and_</span><span class="p">(</span>
+        <span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Name</span> <span class="o">==</span> <span class="s1">&#39;Duncan Warriner&#39;</span><span class="p">,</span>
+        <span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Year</span> <span class="o">==</span> <span class="mi">2017</span>
+    <span class="p">))</span>
+    
+<span class="n">select_results</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">select_stmt</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">select_results</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[(&#39;9th Grade&#39;,)]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># And actually let&#39;s go ahead and revert what we just updated</span>
+<span class="n">update_stmt</span> <span class="o">=</span> <span class="n">update</span><span class="p">(</span><span class="n">stats2</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="n">Grade</span><span class="o">=</span><span class="s1">&#39;10th Grade&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+    <span class="n">and_</span><span class="p">(</span>
+        <span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Name</span> <span class="o">==</span> <span class="s1">&#39;Duncan Warriner&#39;</span><span class="p">,</span>
+        <span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Year</span> <span class="o">==</span> <span class="mi">2017</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">update_stmt</span><span class="p">)</span>
+
+<span class="c1"># confirmation SELECT statement: &quot;&quot;&quot;SELECT * FROM stats2 WHERE Grade == &#39;10th Grade&#39;</span>
+<span class="c1">#   AND Name == &#39;Duncan Warriner&#39; AND Year == 2017&quot;&quot;&quot;</span>
+<span class="n">select_stmt</span> <span class="o">=</span> <span class="n">select</span><span class="p">([</span><span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Grade</span><span class="p">])</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+    <span class="n">and_</span><span class="p">(</span>
+        <span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Name</span> <span class="o">==</span> <span class="s1">&#39;Duncan Warriner&#39;</span><span class="p">,</span>
+        <span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Year</span> <span class="o">==</span> <span class="mi">2017</span>
+    <span class="p">))</span>
+    
+<span class="n">select_results</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">select_stmt</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">select_results</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[(&#39;10th Grade&#39;,)]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="k">import</span> <span class="n">or_</span><span class="p">,</span> <span class="n">desc</span>
+<span class="c1"># ORDER BY example: &quot;&quot;&quot;SELECT * FROM stats2 WHERE (Name == &#39;Wesley Warriner&#39; OR Name == &#39;Duncan Warriner&#39;) AND </span>
+<span class="c1">#   (Grade == &#39;9th Grade&#39; OR Grade == &#39;10th Grade&#39;) ORDER BY &#39;Year&#39; DESC&quot;&quot;&quot;</span>
+<span class="n">stmt</span> <span class="o">=</span> <span class="n">select</span><span class="p">([</span><span class="n">stats2</span><span class="p">])</span><span class="o">.</span><span class="n">where</span><span class="p">(</span> 
+    <span class="n">and_</span><span class="p">(</span>
+        <span class="n">or_</span><span class="p">(</span>
+            <span class="c1">#I know these are currently the only two names, just an example of usage:</span>
+            <span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Name</span> <span class="o">==</span> <span class="s1">&#39;Wesley Warriner&#39;</span><span class="p">,</span>
+            <span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Name</span> <span class="o">==</span> <span class="s1">&#39;Duncan Warriner&#39;</span><span class="p">),</span>
+        <span class="n">or_</span><span class="p">(</span>
+            <span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Grade</span> <span class="o">==</span> <span class="s1">&#39;9th Grade&#39;</span><span class="p">,</span>
+            <span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Grade</span> <span class="o">==</span> <span class="s1">&#39;10th Grade&#39;</span><span class="p">)</span>
+    <span class="p">))</span>
+<span class="n">ordered_stmt</span> <span class="o">=</span> <span class="n">stmt</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">desc</span><span class="p">(</span><span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Year</span><span class="p">))</span>
+
+<span class="n">ordered_results</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">ordered_stmt</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ordered_results</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[(&#39;Duncan Warriner&#39;, &#39;5,000 Meters&#39;, 2017, &#39;10th Grade&#39;, &#39;18:29.6 PR&#39;), (&#39;Duncan Warriner&#39;, &#39;5,000 Meters&#39;, 2016, &#39;9th Grade&#39;, &#39;19:07.0&#39;), (&#39;Wesley Warriner&#39;, &#39;3,000 Meters&#39;, 2012, &#39;10th Grade&#39;, &#39;13:05.0 PR&#39;), (&#39;Wesley Warriner&#39;, &#39;5,000 Meters&#39;, 2012, &#39;10th Grade&#39;, &#39;17:48.1 PR&#39;), (&#39;Wesley Warriner&#39;, &#39;5,000 Meters&#39;, 2011, &#39;9th Grade&#39;, &#39;18:57.0&#39;)]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Maybe just a few more quickies.</span>
+<span class="c1"># We can also include functions, such as COUNT:</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="k">import</span> <span class="n">func</span>
+
+<span class="c1"># &quot;&quot;&quot;SELECT COUNT(DISTINCT Year) AS count_1 FROM stats2&quot;&quot;&quot;</span>
+<span class="n">count_distinct_stmt</span> <span class="o">=</span> <span class="n">select</span><span class="p">([</span><span class="n">func</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Year</span><span class="o">.</span><span class="n">distinct</span><span class="p">())])</span>
+
+<span class="n">year_distinct_count</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">count_distinct_stmt</span><span class="p">)</span><span class="o">.</span><span class="n">scalar</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Distinct years:&#39;</span><span class="p">,</span> <span class="n">year_distinct_count</span><span class="p">,</span> <span class="s1">&#39;years&#39;</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Distinct years: 6 years
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="k">import</span> <span class="n">ForeignKey</span>
+<span class="c1"># Alright let&#39;s bring another table into the mix</span>
+<span class="c1">#   Note: the following is not Athletic.Net data. I&#39;m just creating and using it here</span>
+<span class="n">athletes2</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s1">&#39;athletes2&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span>
+             <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;Name&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;stats2.Name&#39;</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+             <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;School&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">)),</span>
+             <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;Graduation_Status&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">)),</span> <span class="n">extend_existing</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">engine</span><span class="o">.</span><span class="n">table_names</span><span class="p">())</span>
+<span class="c1"># Print athletes2 table details</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">athletes2</span><span class="p">))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[&#39;athletes2&#39;, &#39;stats2&#39;]
+Table(&#39;athletes2&#39;, MetaData(bind=Engine(sqlite:///xc_profiles.db)), Column(&#39;Name&#39;, String(length=255), ForeignKey(&#39;stats2.Name&#39;), table=&lt;athletes2&gt;, primary_key=True, nullable=False), Column(&#39;School&#39;, String(length=255), table=&lt;athletes2&gt;), Column(&#39;Graduation_Status&#39;, String(length=255), table=&lt;athletes2&gt;), schema=None)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">athletes_list</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;Wesley Warriner&#39;</span><span class="p">,</span> <span class="s1">&#39;School&#39;</span><span class="p">:</span> <span class="s1">&#39;Lake Washington&#39;</span><span class="p">,</span> <span class="s1">&#39;Graduation_Status&#39;</span><span class="p">:</span> <span class="s1">&#39;Yes&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;Duncan Warriner&#39;</span><span class="p">,</span> <span class="s1">&#39;School&#39;</span><span class="p">:</span> <span class="s1">&#39;Redmond&#39;</span><span class="p">,</span> <span class="s1">&#39;Graduation_Status&#39;</span><span class="p">:</span> <span class="s1">&#39;No&#39;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s1">&#39;Name&#39;</span><span class="p">:</span> <span class="s1">&#39;Cody Banks&#39;</span><span class="p">,</span> <span class="s1">&#39;School&#39;</span><span class="p">:</span> <span class="s1">&#39;Ballard&#39;</span><span class="p">,</span> <span class="s1">&#39;Graduation_Status&#39;</span><span class="p">:</span> <span class="s1">&#39;No&#39;</span><span class="p">}</span>
+<span class="p">]</span>
+
+<span class="n">insert_stmt</span> <span class="o">=</span> <span class="n">insert</span><span class="p">(</span><span class="n">athletes2</span><span class="p">)</span>
+<span class="n">insert_results</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">insert_stmt</span><span class="p">,</span> <span class="n">athletes_list</span><span class="p">)</span>
+<span class="c1"># Print rowcount to confirm INSERT</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">insert_results</span><span class="o">.</span><span class="n">rowcount</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>3
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># stats2 JOIN athletes2 ON stats2.&#39;Name&#39; = athletes2.&#39;Name&#39;</span>
+<span class="n">stmt</span> <span class="o">=</span> <span class="n">select</span><span class="p">([</span><span class="n">stats2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Year</span><span class="p">,</span> <span class="n">athletes2</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">Graduation_Status</span><span class="p">])</span>
+<span class="n">join_select_stmt</span> <span class="o">=</span> <span class="n">stmt</span><span class="o">.</span><span class="n">select_from</span><span class="p">(</span><span class="n">stats2</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">athletes2</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">join_select_stmt</span><span class="p">))</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">join_select_stmt</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>SELECT stats2.&#34;Year&#34;, athletes2.&#34;Graduation_Status&#34; 
+FROM stats2 JOIN athletes2 ON stats2.&#34;Name&#34; = athletes2.&#34;Name&#34;
+[(2012, &#39;Yes&#39;), (2014, &#39;Yes&#39;), (2011, &#39;Yes&#39;), (2012, &#39;Yes&#39;), (2013, &#39;Yes&#39;), (2013, &#39;Yes&#39;), (2016, &#39;No&#39;), (2017, &#39;No&#39;)]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+ 
+
